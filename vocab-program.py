@@ -63,7 +63,7 @@ def clearFrame():
 
 # Event on '<Return' key press
 def enterKey(event):
-    # User knows
+    # User knows vocab
     # Clear frame, remove from list, update total, generate new card
     clearFrame()
 
@@ -82,7 +82,7 @@ def enterKey(event):
 
 # Event on '<space>' key press
 def spaceKey(event):
-    # User doesn't know
+    # User doesn't know vocab
     # Clear frame and generate new card
     clearFrame()
     displayTotal(total)
@@ -91,6 +91,7 @@ def spaceKey(event):
     newCard = generateNewCard()
     displayCardInformation(newCard)
 
+# Event on '<Up>' key press
 def upArrowKey(event):
 
     global displayOrder
@@ -103,6 +104,7 @@ def upArrowKey(event):
     displayTotal(total)
     displayCardInformation(newCard)
 
+# Event on '<Down>' key press
 def downArrowKey(event):
     global displayOrder
     if displayOrder == 0:
