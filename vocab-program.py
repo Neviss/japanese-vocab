@@ -11,16 +11,32 @@ def displayTotal(total):
 
 #Display the current card information
 def displayCardInformation(line):
-    # Print card information
-    blank = Label(frame, text="", font=topFont)
-    kana = Label(frame, text=str(line[0]), font=topFont)
-    kanji = Label(bottomFrame, text=str(line[1]), font=bottomFont)
-    definition = Label(bottomFrame, text=str(line[2]), font=bottomFont)
+    # Print card information based on displayOrder
+    # displayOrder = 0 -> kana top
+    # displayOrder = 1 -> kanji top
+    # displayOrder = 2 -> definition top
 
+    blank = Label(frame, text="", font=topFont)
+
+    if displayOrder == 0:
+        kana = Label(frame, text=str(line[0]), font=topFont)
+        kanji = Label(bottomFrame, text=str(line[1]), font=bottomFont)
+        definition = Label(bottomFrame, text=str(line[2]), font=bottomFont)
+
+    elif displayOrder == 1:
+        kana = Label(bottomFrame, text=str(line[0]), font=bottomFont)
+        kanji = Label(frame, text=str(line[1]), font=topFont)
+        definition = Label(bottomFrame, text=str(line[2]), font=bottomFont)
+    elif displayOrder == 2:
+        kana = Label(bottomFrame, text=str(line[0]), font=bottomFont)
+        kanji = Label(bottomFrame, text=str(line[1]), font=bottomFont)
+        definition = Label(frame, text=str(line[2]), font=topFont, wraplength=1750)
+
+    # Pack labels
     blank.pack()
     kana.pack()
-    definition.pack(side=BOTTOM)
-    kanji.pack(side=BOTTOM)
+    kanji.pack()
+    definition.pack()
 
 # Generate a new card
 def generateNewCard():
@@ -28,10 +44,11 @@ def generateNewCard():
         global currentIndex
         currentIndex = rd.randrange(0, total)
         line = cardList[currentIndex]
-        displayCardInformation(line)
+
     elif total == 0:
         line = cardList[0]
-        displayCardInformation(line)
+        
+    return line
 
 # Clear frame
 def clearFrame():
@@ -46,8 +63,6 @@ def clearFrame():
 
 # Event on '<Return' key press
 def enterKey(event):
-    #print("Enter pressed")
-    
     # User knows
     # Clear frame, remove from list, update total, generate new card
     clearFrame()
@@ -56,22 +71,48 @@ def enterKey(event):
     if total > 0:
         del cardList[currentIndex]
         total -= 1
-
         displayTotal(total)
-        generateNewCard()
+        
+        global newCard
+        newCard = generateNewCard()
+        displayCardInformation(newCard)
     else:
         print("No other cards left!")
         Label(frame, text="No other cards left!", font=topFont).pack()
 
 # Event on '<space>' key press
 def spaceKey(event):
-    #print("Spaecebar pressed")
-
     # User doesn't know
     # Clear frame and generate new card
     clearFrame()
-    generateNewCard()
+    displayTotal(total)
 
+    global newCard
+    newCard = generateNewCard()
+    displayCardInformation(newCard)
+
+def upArrowKey(event):
+
+    global displayOrder
+    if displayOrder == 2:
+        displayOrder = 0
+    else:
+        displayOrder += 1
+
+    clearFrame()
+    displayTotal(total)
+    displayCardInformation(newCard)
+
+def downArrowKey(event):
+    global displayOrder
+    if displayOrder == 0:
+        displayOrder = 2
+    else:
+        displayOrder -= 1
+
+    clearFrame()
+    displayTotal(total)
+    displayCardInformation(newCard)
 
 # Read sheet
 df = pd.read_excel('Vocabulary.xlsx', sheet_name='N5 Vocab')
@@ -79,6 +120,7 @@ df = pd.read_excel('Vocabulary.xlsx', sheet_name='N5 Vocab')
 # Create card list and current position
 cardList = []
 currentIndex = 0
+newCard = []
 
 # Make flashcards
 for index, row in df.iterrows():
@@ -86,6 +128,9 @@ for index, row in df.iterrows():
 
 # Calculate total length
 total = len(cardList)
+
+# Setup display order of card
+displayOrder = 0
 
 #-----------------------------------------------------------------------------
 # Tkinter Things
@@ -117,10 +162,13 @@ master.geometry("%dx%d" % (width, height-100))
 # Keybinds
 master.bind("<Return>", enterKey)
 master.bind("<space>", spaceKey)
+master.bind("<Up>", upArrowKey)
+master.bind("<Down>", downArrowKey)
 
 # Widgets go here
 displayTotal(total)
-generateNewCard()
+newCard = generateNewCard()
+displayCardInformation(newCard)
 
 # Execute tkinter
 master.mainloop()
